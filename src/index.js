@@ -1,4 +1,7 @@
 import trafficLight from './trafficLight';
+import inputTally from './inputTally';
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('button_b')

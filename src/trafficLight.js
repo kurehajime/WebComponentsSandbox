@@ -1,4 +1,4 @@
-class trafficLightElement extends HTMLElement {
+export class trafficLightElement extends HTMLElement {
     // コンストラクタ
     constructor() {
         super();
