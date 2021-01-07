@@ -7,10 +7,18 @@ export class inputTally extends HTMLElement {
         });
         this.shadowRoot.innerHTML = `
         <canvas id="canvas" width=${this.width} height=${this.height}></canvas>
+        <style>
+        #canvas {
+             border: solid 3px #000; 
+             user-select: none;
+            }
+        </style>
         `;
         this.context = null;
         this.canvasArray = [];
         this.prevPoint = null;
+        this.startPoint = null;
+        this.clickCount = 0;
     }
     // 読み込み時
     connectedCallback() {
@@ -45,6 +53,13 @@ export class inputTally extends HTMLElement {
         this.setAttribute('height', value);
     }
 
+    // value
+    get value() {
+        return parseInt(this.getAttribute('value'));
+    }
+    set value(_value) {
+        this.setAttribute('value', _value);
+    }
 
     // 購読
     static get observedAttributes() {
@@ -99,17 +114,38 @@ export class inputTally extends HTMLElement {
 
     mouseUp(e) {
         let point = this.getMousePosition(e);
+        let oldValue = this.value;
         this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
         this.draw();
         this.prevPoint = null;
-        console.log("mouseup:" + point.x + "/" + point.y);
+
+        if (this.getDistance(point,this.startPoint) < 7 ){
+            if(this.clickCount == 1){
+                this.canvasArray.pop();
+                this.canvasArray.pop();
+                this.draw();
+                this.clickCount = 0;
+            }else{
+                this.canvasArray.pop();
+                this.draw();
+                this.clickCount +=1;
+            }
+        }else{
+            this.clickCount = 0;
+        }
+        this.value = this.canvasArray.length;
+        this.dispatchEvent(new CustomEvent("change", {
+            detail: {
+                oldValue: isNaN(oldValue)? 0 :oldValue  ,
+                newValue: this.value
+            }
+          }));
     }
     mouseMove(e){
         let point = this.getMousePosition(e);
         this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
         this.draw();
         this.prevPoint = point;
-        console.log("mousemove:" + point.x + "/" + point.y);
     }
 
     mouseDown(e) {
@@ -119,7 +155,7 @@ export class inputTally extends HTMLElement {
         canvas.height= this.height;
         this.canvasArray.push(canvas);
         this.draw();
-        console.log("mousedown:" + point.x + "/" + point.y);
+        this.startPoint = point;
     }
 
 
@@ -139,6 +175,9 @@ export class inputTally extends HTMLElement {
         }
         let rect = e.target.getBoundingClientRect();
         return new Point(e.clientX - rect.left, e.clientY - rect.top);
+    }
+    getDistance(p1,p2){
+        return Math.sqrt(Math.pow(p1.x - p2.x,2) +Math.pow(p1.y -p2.y,2) );
     }
 }
 
