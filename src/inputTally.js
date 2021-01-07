@@ -19,6 +19,7 @@ export class inputTally extends HTMLElement {
         this.prevPoint = null;
         this.startPoint = null;
         this.clickCount = 0;
+        this.distance = 0;
     }
     // 読み込み時
     connectedCallback() {
@@ -118,8 +119,9 @@ export class inputTally extends HTMLElement {
         this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
         this.draw();
         this.prevPoint = null;
-
-        if (this.getDistance(point,this.startPoint) < 7 ){
+        let _distance =  this.getDistance(point,this.startPoint)
+        this.distance = Math.max(_distance,this.distance);
+        if (this.distance < 7 ){
             if(this.clickCount == 1){
                 this.canvasArray.pop();
                 this.canvasArray.pop();
@@ -133,6 +135,7 @@ export class inputTally extends HTMLElement {
         }else{
             this.clickCount = 0;
         }
+        this.distance = 0;
         this.value = this.canvasArray.length;
         this.dispatchEvent(new CustomEvent("change", {
             detail: {
@@ -145,6 +148,8 @@ export class inputTally extends HTMLElement {
         let point = this.getMousePosition(e);
         this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
         this.draw();
+        let _distance =  this.getDistance(point,this.startPoint)
+        this.distance = Math.max(_distance,this.distance);
         this.prevPoint = point;
     }
 
