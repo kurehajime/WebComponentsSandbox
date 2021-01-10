@@ -31,11 +31,9 @@ export class InputTally extends HTMLElement {
         this.canvas = this.shadowRoot.getElementById('canvas'); 
         this.context = this.canvas.getContext('2d');
         if ('ontouchstart' in window) {
-            this.canvas.addEventListener('touchstart', (e) => this.mouseDown(e));
-            this.canvas.addEventListener('touchmove', (e) => this.mouseMove(e));
-            this.canvas.addEventListener('touchend', (e) => this.mouseUp(e),{
-                passive: false
-              });
+            this.canvas.addEventListener('touchstart', (e) => {this.mouseDown(e);e.preventDefault();},{passive: false});
+            this.canvas.addEventListener('touchmove', (e) => {this.mouseMove(e);e.preventDefault();},{passive: false});
+            this.canvas.addEventListener('touchend', (e) => {this.mouseUp(e);e.preventDefault();},{passive: false});
         } else {
             this.canvas.addEventListener('mousedown', (e) => this.mouseDown(e));
             this.canvas.addEventListener('mousemove', (e) => {
@@ -163,7 +161,7 @@ export class InputTally extends HTMLElement {
                 newValue: this.value
             }
         }));
-        e.preventDefault();
+        
     }
     mouseMove(e) {
         let point = this.getMousePosition(e);
