@@ -33,7 +33,9 @@ export class InputTally extends HTMLElement {
         if ('ontouchstart' in window) {
             this.canvas.addEventListener('touchstart', (e) => this.mouseDown(e));
             this.canvas.addEventListener('touchmove', (e) => this.mouseMove(e));
-            this.canvas.addEventListener('touchend', (e) => this.mouseUp(e));
+            this.canvas.addEventListener('touchend', (e) => this.mouseUp(e),{
+                passive: false
+              });
         } else {
             this.canvas.addEventListener('mousedown', (e) => this.mouseDown(e));
             this.canvas.addEventListener('mousemove', (e) => {
