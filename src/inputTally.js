@@ -11,9 +11,11 @@ export class InputTally extends HTMLElement {
         #canvas {
              border: solid 3px #000; 
              user-select: none;
-            }
+             touch-action: manipulation;
+        }
         </style>
         `;
+        this.canvas = null;
         this.context = null;
         this.canvasArray = [];
         this.prevPoint = null;
@@ -26,17 +28,18 @@ export class InputTally extends HTMLElement {
 
     // 読み込み時
     connectedCallback() {
-        this.context = this.shadowRoot.getElementById('canvas').getContext('2d');
+        this.canvas = this.shadowRoot.getElementById('canvas'); 
+        this.context = this.canvas.getContext('2d');
         if ('ontouchstart' in window) {
-            this.shadowRoot.getElementById('canvas').addEventListener('touchstart', (e) => this.mouseDown(e));
-            this.shadowRoot.getElementById('canvas').addEventListener('touchmove', (e) => this.mouseMove(e));
-            this.shadowRoot.getElementById('canvas').addEventListener('touchend', (e) => this.mouseUp(e));
+            this.canvas.addEventListener('touchstart', (e) => this.mouseDown(e));
+            this.canvas.addEventListener('touchmove', (e) => this.mouseMove(e));
+            this.canvas.addEventListener('touchend', (e) => this.mouseUp(e));
         } else {
-            this.shadowRoot.getElementById('canvas').addEventListener('mousedown', (e) => this.mouseDown(e));
-            this.shadowRoot.getElementById('canvas').addEventListener('mousemove', (e) => {
+            this.canvas.addEventListener('mousedown', (e) => this.mouseDown(e));
+            this.canvas.addEventListener('mousemove', (e) => {
                 if (e.buttons === 1) { this.mouseMove(e) }
             });
-            this.shadowRoot.getElementById('canvas').addEventListener('mouseup', (e) => this.mouseUp(e));
+            this.canvas.addEventListener('mouseup', (e) => this.mouseUp(e));
         }
         this.draw();
     }
@@ -123,7 +126,6 @@ export class InputTally extends HTMLElement {
             context.lineTo(x, y);
             context.stroke();
         }
-
     }
 
     //#endregion
@@ -131,13 +133,12 @@ export class InputTally extends HTMLElement {
     // #region Events
 
     mouseUp(e) {
-        let point = this.getMousePosition(e);
+        let point = this.prevPoint;
         let oldValue = this.value;
         this.drawLine(this.canvasArray[this.canvasArray.length - 1].getContext('2d'), point.x, point.y);
         this.draw();
         this.prevPoint = null;
-        let _distance = this.getDistance(point, this.startPoint)
-        this.distance = Math.max(_distance, this.distance);
+        this.distance = Math.max(this.getDistance(point, this.startPoint), this.distance);
         if (this.distance < 7) {
             if (this.clickCount == 1) {
                 this.canvasArray.pop();
@@ -177,6 +178,7 @@ export class InputTally extends HTMLElement {
         canvas.height = this.height;
         this.canvasArray.push(canvas);
         this.draw();
+        this.prevPoint = point;
         this.startPoint = point;
     }
 
