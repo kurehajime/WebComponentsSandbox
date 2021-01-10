@@ -161,6 +161,7 @@ export class InputTally extends HTMLElement {
                 newValue: this.value
             }
         }));
+        e.preventDefault();
     }
     mouseMove(e) {
         let point = this.getMousePosition(e);
