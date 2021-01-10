@@ -1,5 +1,5 @@
-export class inputTally extends HTMLElement {
-    // コンストラクタ
+export class InputTally extends HTMLElement {
+
     constructor() {
         super();
         this.attachShadow({
@@ -21,6 +21,9 @@ export class inputTally extends HTMLElement {
         this.clickCount = 0;
         this.distance = 0;
     }
+
+    //#region WebCompornents Methods
+
     // 読み込み時
     connectedCallback() {
         this.context = this.shadowRoot.getElementById('canvas').getContext('2d');
@@ -31,12 +34,37 @@ export class inputTally extends HTMLElement {
         } else {
             this.shadowRoot.getElementById('canvas').addEventListener('mousedown', (e) => this.mouseDown(e));
             this.shadowRoot.getElementById('canvas').addEventListener('mousemove', (e) => {
-                if(e.buttons ===1 ){this.mouseMove(e)}
+                if (e.buttons === 1) { this.mouseMove(e) }
             });
             this.shadowRoot.getElementById('canvas').addEventListener('mouseup', (e) => this.mouseUp(e));
         }
         this.draw();
     }
+
+    // 購読
+    static get observedAttributes() {
+
+        return ['width', 'height'];
+    }
+
+    // 監視イベント
+    attributeChangedCallback(name, oldValue, newValue) {
+        switch (name) {
+            case "width":
+                this.shadowRoot.getElementById('canvas').width = newValue;
+                break;
+            case "height":
+                this.shadowRoot.getElementById('canvas').height = newValue;
+                break;
+            default:
+                break;
+        }
+        this.draw();
+    }
+
+    //#endregion
+
+    // #region Props
 
     // width
     get width() {
@@ -62,30 +90,13 @@ export class inputTally extends HTMLElement {
         this.setAttribute('value', _value);
     }
 
-    // 購読
-    static get observedAttributes() {
+    // #endregion
 
-        return ['width', 'height'];
-    }
-
-    // 監視イベント
-    attributeChangedCallback(name, oldValue, newValue) {
-        switch (name) {
-            case "width":
-                this.shadowRoot.getElementById('canvas').width = newValue;
-                break;
-            case "height":
-                this.shadowRoot.getElementById('canvas').height = newValue;
-                break;
-            default:
-                break;
-        }
-        this.draw();
-    }
+    //#region Draws
 
     // 描画
     draw() {
-        if(this.context === null){
+        if (this.context === null) {
             return;
         }
         this.context.clearRect(0, 0, this.width, this.height);
@@ -93,63 +104,69 @@ export class inputTally extends HTMLElement {
             this.context.drawImage(this.canvasArray[i], 0, 0, this.width, this.height);
         }
     }
-    drawLine(context,x,y){
-        if(this.context === null){
+
+    // 線を描画
+    drawLine(context, x, y) {
+        if (this.context === null) {
             return;
         }
 
-        context.fillStyle = "rgba(0,0,0,1)" ;
-        context.strokeStyle  = "rgba(0,0,0,1)" ;
-        context.beginPath () ;
-        if(this.prevPoint == null){
-            context.arc( x, y, 2, 0 * Math.PI / 180, 360 * Math.PI / 180, false ) ;
-            context.fill() ;
-        }else{
-            context.lineWidth = 3 ;
-            context.moveTo( this.prevPoint.x, this.prevPoint.y ) ;
-            context.lineTo( x, y );
-            context.stroke() ;
+        context.fillStyle = "rgba(0,0,0,1)";
+        context.strokeStyle = "rgba(0,0,0,1)";
+        context.beginPath();
+        if (this.prevPoint == null) {
+            context.arc(x, y, 2, 0 * Math.PI / 180, 360 * Math.PI / 180, false);
+            context.fill();
+        } else {
+            context.lineWidth = 3;
+            context.moveTo(this.prevPoint.x, this.prevPoint.y);
+            context.lineTo(x, y);
+            context.stroke();
         }
 
     }
 
+    //#endregion
+
+    // #region Events
+
     mouseUp(e) {
         let point = this.getMousePosition(e);
         let oldValue = this.value;
-        this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
+        this.drawLine(this.canvasArray[this.canvasArray.length - 1].getContext('2d'), point.x, point.y);
         this.draw();
         this.prevPoint = null;
-        let _distance =  this.getDistance(point,this.startPoint)
-        this.distance = Math.max(_distance,this.distance);
-        if (this.distance < 7 ){
-            if(this.clickCount == 1){
+        let _distance = this.getDistance(point, this.startPoint)
+        this.distance = Math.max(_distance, this.distance);
+        if (this.distance < 7) {
+            if (this.clickCount == 1) {
                 this.canvasArray.pop();
                 this.canvasArray.pop();
                 this.draw();
                 this.clickCount = 0;
-            }else{
+            } else {
                 this.canvasArray.pop();
                 this.draw();
-                this.clickCount +=1;
+                this.clickCount += 1;
             }
-        }else{
+        } else {
             this.clickCount = 0;
         }
         this.distance = 0;
         this.value = this.canvasArray.length;
         this.dispatchEvent(new CustomEvent("change", {
             detail: {
-                oldValue: isNaN(oldValue)? 0 :oldValue  ,
+                oldValue: isNaN(oldValue) ? 0 : oldValue,
                 newValue: this.value
             }
-          }));
+        }));
     }
-    mouseMove(e){
+    mouseMove(e) {
         let point = this.getMousePosition(e);
-        this.drawLine(this.canvasArray[this.canvasArray.length-1].getContext('2d'),point.x,point.y);
+        this.drawLine(this.canvasArray[this.canvasArray.length - 1].getContext('2d'), point.x, point.y);
         this.draw();
-        let _distance =  this.getDistance(point,this.startPoint)
-        this.distance = Math.max(_distance,this.distance);
+        let _distance = this.getDistance(point, this.startPoint)
+        this.distance = Math.max(_distance, this.distance);
         this.prevPoint = point;
     }
 
@@ -157,12 +174,15 @@ export class inputTally extends HTMLElement {
         let point = this.getMousePosition(e);
         let canvas = document.createElement('canvas');
         canvas.width = this.width;
-        canvas.height= this.height;
+        canvas.height = this.height;
         this.canvasArray.push(canvas);
         this.draw();
         this.startPoint = point;
     }
 
+    // #endregion
+
+    //#region Utils
 
     // マウス位置取得
     getMousePosition(e) {
@@ -181,9 +201,14 @@ export class inputTally extends HTMLElement {
         let rect = e.target.getBoundingClientRect();
         return new Point(e.clientX - rect.left, e.clientY - rect.top);
     }
-    getDistance(p1,p2){
-        return Math.sqrt(Math.pow(p1.x - p2.x,2) +Math.pow(p1.y -p2.y,2) );
+
+    // 距離を測る
+    getDistance(p1, p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
     }
+
+    //#endregion
+
 }
 
 class Point {
@@ -193,4 +218,4 @@ class Point {
     }
 }
 
-customElements.define('input-tally', inputTally);
+customElements.define('input-tally', InputTally);
