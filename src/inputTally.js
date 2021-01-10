@@ -11,7 +11,7 @@ export class InputTally extends HTMLElement {
         #canvas {
              border: solid 3px #000; 
              user-select: none;
-             touch-action: manipulation;
+             touch-action: none ;
         }
         </style>
         `;
