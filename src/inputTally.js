@@ -6,14 +6,19 @@ export class InputTally extends HTMLElement {
             mode: 'open'
         });
         this.shadowRoot.innerHTML = `
-        <canvas id="canvas" width=${this.width} height=${this.height}></canvas>
         <style>
-        #canvas {
-             border: solid 3px #000; 
+        :host{
+            border: solid 1px #888888; 
+            display: inline-block;
+            vertical-align: bottom;
+            font-size: 0; 
+        }
+        #canvas { 
              user-select: none;
              touch-action: none ;
         }
         </style>
+        <canvas id="canvas" width=${this.width} height=${this.height}></canvas>
         `;
         this.canvas = null;
         this.context = null;
@@ -22,6 +27,7 @@ export class InputTally extends HTMLElement {
         this.startPoint = null;
         this.clickCount = 0;
         this.distance = 0;
+        this.color = this.color ? this.color : "#000000";
     }
 
     //#region WebCompornents Methods
@@ -47,7 +53,7 @@ export class InputTally extends HTMLElement {
     // 購読
     static get observedAttributes() {
 
-        return ['width', 'height'];
+        return ['width', 'height','color'];
     }
 
     // 監視イベント
@@ -93,6 +99,15 @@ export class InputTally extends HTMLElement {
         this.setAttribute('value', _value);
     }
 
+    // color
+    get color() {
+        return this.getAttribute('color');
+    }
+    set color(_value) {
+        this.setAttribute('color', _value);
+    }
+
+
     // #endregion
 
     //#region Draws
@@ -114,8 +129,8 @@ export class InputTally extends HTMLElement {
             return;
         }
 
-        context.fillStyle = "rgba(0,0,0,1)";
-        context.strokeStyle = "rgba(0,0,0,1)";
+        context.fillStyle = this.color;
+        context.strokeStyle = this.color;
         context.beginPath();
         if (this.prevPoint == null) {
             context.arc(x, y, 2, 0 * Math.PI / 180, 360 * Math.PI / 180, false);
